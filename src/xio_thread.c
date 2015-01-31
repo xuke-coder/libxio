@@ -83,6 +83,8 @@ void
 xio_thread_destroy(xio_worker_thread_t *worker_thread, xio_err_t *err)
 {
     worker_thread->release_start = XIO_TRUE;
+
+    xio_signal_send(worker_thread->sub_signal, err);
     
     while (1) {
         if (worker_thread->release_done == XIO_TRUE) {

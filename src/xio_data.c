@@ -188,7 +188,11 @@ xio_data_queue_push(xio_queue_t *que, xio_data_task_node_t *node,
     link = &node->que_link;
 
     xio_spin_lock(lock);
-    xio_queue_single_push(que, tail, link);
+    
+    if (que->release_flag == XIO_FALSE) {
+        xio_queue_single_push(que, tail, link);
+    }
+    
     xio_spin_unlock(lock);
     
 }

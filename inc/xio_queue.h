@@ -34,6 +34,7 @@ struct xio_queue_s {
     xio_thread_lock_t   thread_lock;
     uint32_t            size;
     uint32_t            max_size;
+    int                 release_flag;
 };
 
 
@@ -41,13 +42,15 @@ struct xio_queue_s {
                 que->head.next = &que->head;        \
                 que->head.prev = &que->head;        \
                 que->size = 0;                      \
-                que->max_size = max_size;
+                que->max_size = max_size;           \
+                que->release_flag = XIO_FALSE;
 
 #define     xio_queue_release(que)                  \
                 que->head.next = &que->head;        \
                 que->head.prev = &que->head;        \
                 que->size = 0;                      \
-                que->max_size = 0;
+                que->max_size = 0;                  \
+                que->release_flag = XIO_FALSE;
 
 #define     xio_queue_single_pop(que, head, node)   \
                 head = &que->head;                  \
@@ -114,7 +117,5 @@ struct xio_queue_s {
 #define     xio_queue_double_remove(que, link)      \
                 link->prev->next = link->next;      \
                 link->next->prev = link->prev;      \
-                link->prev = NULL;                  \
-                link->next = NULL;                  \
                 que->size--;
 #endif

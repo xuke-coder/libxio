@@ -191,6 +191,7 @@ int main()
         }
     }
 
+    xio_release(xio_mgr, &err);
 
     return 0;
     

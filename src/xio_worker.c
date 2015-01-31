@@ -149,15 +149,34 @@ thread_release:
 }
 
 void
-xio_worker_thread_release(xio_worker_manager_t *worker_mgr, xio_err_t *err)
+xio_worker_thread_release(xio_worker_manager_t *worker_mgr, 
+    xio_err_t *err)
 {
     xio_worker_thread_t     *worker_thread = NULL;
-    xio_queue_t             *que = NULL;
+    xio_queue_t             *task_que = NULL;
+    xio_queue_t             *thread_que = NULL;
+    xio_queue_t             *wait_que = NULL;
 
-    que = &worker_mgr->thread_pool;
-    worker_thread = (xio_worker_thread_t *)que->head.next;
+    thread_que = &worker_mgr->thread_que;
+    wait_que = &worker_mgr->wait_queue;
+    task_que = &worker_mgr->xio_mgr->data_mgr->task_que;
+
+    xio_spin_lock(&task_que->atomic_lock);
+
+    task_que->release_flag = XIO_TRUE;
     
-    while (worker_thread) {
+    xio_spin_unlock(&task_que->atomic_lock);
+
+    worker_thread = (xio_worker_thread_t *)thread_que->head.next;
+
+    while (worker_thread != &thread_que->head) {
+        xio_thread_destroy(worker_thread, err);
+        worker_thread = (xio_worker_thread_t *)worker_thread->link.next;
+    }
+
+    worker_thread = (xio_worker_thread_t *)wait_que->head.next;
+
+    while (worker_thread != &wait_que->head) {
         xio_thread_destroy(worker_thread, err);
         worker_thread = (xio_worker_thread_t *)worker_thread->link.next;
     }

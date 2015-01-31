@@ -1,6 +1,6 @@
 CC = gcc
 AR = ar
-CP = cp
+CP = cp -f
 DEBUG = -g
 CFLAG =-Wall -Werror
 LIB = -lpthread
