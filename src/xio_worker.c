@@ -153,6 +153,7 @@ xio_worker_thread_release(xio_worker_manager_t *worker_mgr,
     xio_err_t *err)
 {
     xio_worker_thread_t     *worker_thread = NULL;
+    xio_worker_thread_t     *worker_next = NULL;
     xio_queue_t             *task_que = NULL;
     xio_queue_t             *thread_que = NULL;
     xio_queue_t             *wait_que = NULL;
@@ -170,15 +171,17 @@ xio_worker_thread_release(xio_worker_manager_t *worker_mgr,
     worker_thread = (xio_worker_thread_t *)thread_que->head.next;
 
     while (worker_thread != &thread_que->head) {
+        worker_next = (xio_worker_thread_t *)worker_thread->link.next;
         xio_thread_destroy(worker_thread, err);
-        worker_thread = (xio_worker_thread_t *)worker_thread->link.next;
+        worker_thread = worker_next;
     }
 
     worker_thread = (xio_worker_thread_t *)wait_que->head.next;
 
     while (worker_thread != &wait_que->head) {
+        worker_next = (xio_worker_thread_t *)worker_thread->link.next;
         xio_thread_destroy(worker_thread, err);
-        worker_thread = (xio_worker_thread_t *)worker_thread->link.next;
+        worker_thread = worker_next;
     }
 }
 

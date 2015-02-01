@@ -191,6 +191,7 @@ int main()
         }
     }
 
+    printf("release send\n");
     xio_release(xio_mgr, &err);
 
     return 0;

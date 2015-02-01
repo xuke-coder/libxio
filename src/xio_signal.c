@@ -47,7 +47,7 @@ xio_signal_release(int evfd, xio_err_t *err)
 int
 xio_signal_send(int evfd, xio_err_t *err)
 {
-    uint64_t    val = 1;
+    uint64_t    val = 0x555;
 
     if (write(evfd, &val, sizeof(val)) == -1) {
         if (err) {
@@ -55,7 +55,6 @@ xio_signal_send(int evfd, xio_err_t *err)
         }
         return XIO_ERROR;
     }
-
     return XIO_OK;
 }
 
