@@ -170,7 +170,7 @@ xio_worker_thread_release(xio_worker_manager_t *worker_mgr,
 
     worker_thread = (xio_worker_thread_t *)thread_que->head.next;
 
-    while (worker_thread != &thread_que->head) {
+    while ((xio_link_t *)worker_thread != &thread_que->head) {
         worker_next = (xio_worker_thread_t *)worker_thread->link.next;
         xio_thread_destroy(worker_thread, err);
         worker_thread = worker_next;
@@ -178,7 +178,7 @@ xio_worker_thread_release(xio_worker_manager_t *worker_mgr,
 
     worker_thread = (xio_worker_thread_t *)wait_que->head.next;
 
-    while (worker_thread != &wait_que->head) {
+    while ((xio_link_t *)worker_thread != &wait_que->head) {
         worker_next = (xio_worker_thread_t *)worker_thread->link.next;
         xio_thread_destroy(worker_thread, err);
         worker_thread = worker_next;
@@ -217,42 +217,46 @@ xio_worker_thread_cycle(void *data)
 
     while (task_queue->size != 0 || worker_thread->release_start == XIO_FALSE) {
         if (!(task_node = xio_data_queue_pop_n(task_queue, 10, NULL))) {
+        //if (!(task_node = xio_data_queue_pop(task_queue, NULL))) {    
             
             if (i < 3) {
                 i++;
                 continue;
             }
 
-            xio_spin_lock(&thread_queue->atomic_lock);
-            if (thread_queue->size <= worker_mgr->min_thread_num) {
-                xio_spin_unlock(&thread_queue->atomic_lock);
-                xio_signal_recv(worker_thread->sub_signal, NULL);
+            //xio_spin_lock(&thread_queue->atomic_lock);
+            //if (thread_queue->size <= worker_mgr->min_thread_num) {
+                //xio_spin_unlock(&thread_queue->atomic_lock);
+                //xio_signal_recv(worker_thread->sub_signal, NULL);
                 
-            } else {
-                xio_queue_double_remove(thread_queue, 
-                    ((xio_link_t *)worker_thread));
+            //} else {
+                //xio_queue_double_remove(thread_queue, 
+                //    ((xio_link_t *)worker_thread));
                 
-                xio_spin_unlock(&thread_queue->atomic_lock);
+                //xio_spin_unlock(&thread_queue->atomic_lock);
+
+                xio_worker_queue_delete(thread_queue, worker_thread);
 
                 xio_worker_queue_push(wait_queue, worker_thread);
 
-                idle_start_time = time(NULL);
+                //idle_start_time = time(NULL);
                 
                 xio_signal_recv(worker_thread->sub_signal, NULL);
 
                 xio_worker_queue_delete(wait_queue, worker_thread);
                 
-                idle_end_time = time(NULL);
-
+                //idle_end_time = time(NULL);
+                /*
                 if (idle_end_time - idle_start_time >= idle_time) {
-                    xio_signal_send(
-                        ((xio_worker_thread_t *)head_link->next)->sub_signal, 
-                        NULL);
+                    //xio_signal_send(
+                    //    ((xio_worker_thread_t *)head_link->next)->sub_signal, 
+                    //    NULL);
                     break;
                 }
+                */
 
                 xio_worker_queue_push(thread_queue, worker_thread);
-            }
+            //}
            
         }
 

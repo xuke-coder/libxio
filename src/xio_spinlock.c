@@ -38,7 +38,8 @@ xio_spin_lock(xio_atomic_lock_t *lock)
 void
 xio_spin_unlock(xio_atomic_lock_t *lock)
 {
-    *lock = XIO_LOCK_OFF;
+    //*lock = XIO_LOCK_OFF;
+    while (!xio_atomic_cmp_set(lock, XIO_LOCK_ON, XIO_LOCK_OFF));
 }
 
 void

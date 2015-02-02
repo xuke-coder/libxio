@@ -22,6 +22,7 @@ enum {
     XIO_ERR_IO_TYPE,
     XIO_ERR_IO_TYPE_REDEF,
     XIO_ERR_TASK_POOL_EMPTY,
+    XIO_ERR_TASK_TOO_MANY,
     XIO_ERR_END
     
 };

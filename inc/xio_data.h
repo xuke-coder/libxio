@@ -58,7 +58,7 @@ xio_data_task_push(xio_data_manager_t *data_mgr, void *user_data,
 int
 xio_data_register_exec_handler(xio_data_manager_t *data_mgr, 
     xio_io_exec_handler exec_handler, XIO_IO_TYPE io_type, xio_err_t *err);
-void
+int
 xio_data_queue_push(xio_queue_t *que, xio_data_task_node_t *node, 
     xio_err_t *err);
 xio_data_task_node_t *

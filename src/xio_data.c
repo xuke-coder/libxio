@@ -91,12 +91,19 @@ xio_data_task_push(xio_data_manager_t *data_mgr, void *user_data,
     task_node->finish_handler = finish_handler;
     task_node->user_data = user_data;
 
-    xio_data_queue_push(task_que, task_node, err);
+    if (xio_data_queue_push(task_que, task_node, err) != XIO_OK) {
+        err->log_errno = XIO_ERR_TASK_TOO_MANY;
+        return XIO_ERROR;
+    }
 
+    xio_spin_lock(&worker_mgr->wait_queue.atomic_lock);
+    
     if (worker_mgr->wait_queue.size > 0) {
         xio_signal_send(((xio_worker_thread_t *)head_link->next)->sub_signal, 
             err);
     }
+
+    xio_spin_unlock(&worker_mgr->wait_queue.atomic_lock);
     
     return XIO_OK;
 }
@@ -176,13 +183,14 @@ xio_data_task_queue_release(xio_data_manager_t *data_mgr, xio_err_t *err)
     xio_queue_release(que);
 }
 
-void
+int
 xio_data_queue_push(xio_queue_t *que, xio_data_task_node_t *node, 
     xio_err_t *err)
 {
     xio_link_t          *tail = NULL;
     xio_link_t          *link = NULL;
     xio_atomic_lock_t   *lock = NULL;
+    int                  ret = XIO_ERROR;
 
     lock = &que->atomic_lock;
     link = &node->que_link;
@@ -191,9 +199,12 @@ xio_data_queue_push(xio_queue_t *que, xio_data_task_node_t *node,
     
     if (que->release_flag == XIO_FALSE) {
         xio_queue_single_push(que, tail, link);
+        ret = XIO_OK;
     }
     
     xio_spin_unlock(lock);
+
+    return ret;
     
 }
 
