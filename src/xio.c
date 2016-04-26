@@ -27,9 +27,9 @@ xio_init(xio_property_t *property, xio_err_t *err)
         return NULL;
     }
 
-    if (sizeof(void *) == 8) {
-        #define PROCESS_64BIT
-    }
+    #ifdef __x86_64__
+    	#define PROCESS_64BIT
+    #endif
 
     if (property) {
         max_task_num = property->max_task_num;
